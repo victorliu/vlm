@@ -1,0 +1,21 @@
+# Assumes you have MSYS2 installed, with the following packages:
+#   mingw64/mingw-w64-x86_64-lua
+
+SHLIB_EXT = dll
+SHLIB_FLAGS = -shared -fpic
+
+LUA_INC = 
+LUA_LIB = -Wl,-Bdynamic -llua -Wl,-Bstatic
+LUA_MODULE_LIB = -Wl,-Bdynamic -llua.dll -Wl,-Bstatic
+
+CXX = g++
+CC  = gcc
+
+OPTFLAGS += -O2 -Wall -march=native -fcx-limited-range -fno-exceptions
+CXXFLAGS += -std=gnu++11  -static
+CFLAGS   += -std=c99      -static
+
+INSTALL_DIR = /usr/local/bin
+MODULE_ROOT  = /usr/local
+MODULE_ROOT2 = /mingw64
+LUA_VERSION = 5.3
