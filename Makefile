@@ -13,19 +13,25 @@ ALL_BINARY_MODULES = \
 all: $(ALL_BINARY_MODULES)
 
 bits/bits.$(SHLIB_EXT): bits/bits.c
-	$(CC) $(LUA_INCLUDE) -O3 $(SHLIB_FLAGS) $< -o $@ $(LUA_MODULE_LIB)
+	$(CC) $(CFLAGS) $(LUA_INCLUDE) -O3 $(SHLIB_FLAGS) $< -o $@ $(LUA_MODULE_LIB)
 	
 dxf/DXF.$(SHLIB_EXT): dxf/DXF.c
-	$(CC) -Idxf $(LUA_INCLUDE) -O3 $(SHLIB_FLAGS) $< -o $@ $(LUA_MODULE_LIB)
+	$(CC) $(CFLAGS) -Idxf $(LUA_INCLUDE) -O3 $(SHLIB_FLAGS) $< -o $@ $(LUA_MODULE_LIB)
 	
-gpc/GPC.$(SHLIB_EXT): gpc/gpc.c
-	$(CC) -Igpc $(LUA_INCLUDE) -O3 $(SHLIB_FLAGS) $< -o $@ $(LUA_MODULE_LIB)
+gpc/GPC.$(SHLIB_EXT): gpc/gpc.c gpc/luagpc.c
+	$(CC) $(CFLAGS) -Igpc $(LUA_INCLUDE) -O3 $(SHLIB_FLAGS) $< gpc/luagpc.c -o $@ $(LUA_MODULE_LIB)
 	
 nlopt/nlopt.$(SHLIB_EXT): nlopt/LuaNLopt.cpp
-	$(CXX) $(LUA_INCLUDE) -O3 $(SHLIB_FLAGS) $< -o $@ $(LUA_MODULE_LIB) -lnlopt
+	$(CXX) $(CXXFLAGS) $(LUA_INCLUDE) -O3 $(SHLIB_FLAGS) $< -o $@ $(LUA_MODULE_LIB) -lnlopt
 
 random/random.$(SHLIB_EXT): random/random.cpp
-	$(CXX) $(LUA_INCLUDE) -O3 $(SHLIB_FLAGS) $< -o $@ $(LUA_MODULE_LIB)
+	$(CXX) $(CXXFLAGS) $(LUA_INCLUDE) -O3 $(SHLIB_FLAGS) $< -o $@ $(LUA_MODULE_LIB)
+
+clean:
+	rm -f bits/bits.$(SHLIB_EXT)
+	rm -f dxf/DXF.$(SHLIB_EXT)
+	rm -f gpc/GPC.$(SHLIB_EXT)
+	rm -f nlopt/nlopt.$(SHLIB_EXT)
 
 install:
 	install bits/bits.$(SHLIB_EXT)         $(MODULE_ROOT)/lib/lua/$(LUA_VERSION)/

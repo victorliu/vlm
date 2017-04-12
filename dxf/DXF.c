@@ -275,6 +275,7 @@ static int writer_polyline(lua_State *L){
 }
 
 int luaopen_DXF(lua_State *L){
+	const luaL_Reg* l;
 	static const luaL_Reg writer_methods[] = {
 		{"set_layer", writer_set_layer},
 		{"circle", writer_circle},
@@ -307,13 +308,13 @@ int luaopen_DXF(lua_State *L){
 	lua_pushvalue(L, methodtable);
 	lua_settable(L, metatable);
 
-	for(const luaL_Reg* l = writer_metamethods; NULL != l && l->name; l++){
+	for(l = writer_metamethods; NULL != l && l->name; l++){
 		lua_pushstring(L, l->name);
 		lua_pushcfunction(L, l->func);
 		lua_rawset(L, metatable);
 	}
 	
-	for(const luaL_Reg* l = writer_methods; NULL != l && l->name; l++){
+	for(l = writer_methods; NULL != l && l->name; l++){
 		lua_pushstring(L, l->name);
 		lua_pushcfunction(L, l->func);
 		lua_rawset(L, methodtable);

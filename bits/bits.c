@@ -247,7 +247,7 @@ static int intpacker_pack(lua_State *L){
 	if(n != packer->nfields+1){
 		luaL_error(L, "Expected %d packing arguments", packer->nfields);
 	}
-	for(int i = 0; i < packer->nfields; ++i){
+	for(i = 0; i < packer->nfields; ++i){
 		int x = lua_tointeger(L, i+2);
 		int imask = packer->npos[i+1] - packer->npos[i];
 		y |= ((((unsigned int)x) & mask[imask]) << packer->npos[i]);
@@ -259,7 +259,7 @@ static int intpacker_unpack(lua_State *L){
 	struct intpacker *packer = intpacker_check(L, 1);
 	unsigned int x = luaL_checkinteger(L, 2);
 	int i;
-	for(int i = 0; i < packer->nfields; ++i){
+	for(i = 0; i < packer->nfields; ++i){
 		int imask = packer->npos[i+1] - packer->npos[i];
 		unsigned int y = x & mask[imask];
 		x >>= imask;
@@ -269,6 +269,7 @@ static int intpacker_unpack(lua_State *L){
 }
 
 int luaopen_bits(lua_State *L){
+	const luaL_Reg* l;
 	static const luaL_Reg intpacker_methods[] = {
 		{"pack", intpacker_pack},
 		{"unpack", intpacker_unpack},
@@ -300,13 +301,13 @@ int luaopen_bits(lua_State *L){
 	lua_pushvalue(L, methodtable);
 	lua_settable(L, metatable);
 
-	for(const luaL_Reg* l = intpacker_metamethods; NULL != l && l->name; l++){
+	for(l = intpacker_metamethods; NULL != l && l->name; l++){
 		lua_pushstring(L, l->name);
 		lua_pushcfunction(L, l->func);
 		lua_rawset(L, metatable);
 	}
 	
-	for(const luaL_Reg* l = intpacker_methods; NULL != l && l->name; l++){
+	for(l = intpacker_methods; NULL != l && l->name; l++){
 		lua_pushstring(L, l->name);
 		lua_pushcfunction(L, l->func);
 		lua_rawset(L, methodtable);
