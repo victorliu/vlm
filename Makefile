@@ -8,6 +8,7 @@ ALL_BINARY_MODULES = \
 	dxf/DXF.$(SHLIB_EXT) \
 	gpc/GPC.$(SHLIB_EXT) \
 	nlopt/nlopt.$(SHLIB_EXT) \
+	circlefit/circlefit.$(SHLIB_EXT) \
 	random/random.$(SHLIB_EXT)
 
 all: $(ALL_BINARY_MODULES)
@@ -27,26 +28,32 @@ nlopt/nlopt.$(SHLIB_EXT): nlopt/LuaNLopt.cpp
 random/random.$(SHLIB_EXT): random/random.cpp
 	$(CXX) $(CXXFLAGS) $(LUA_INCLUDE) -O3 $(SHLIB_FLAGS) $< -o $@ $(LUA_MODULE_LIB)
 
+circlefit/circlefit.$(SHLIB_EXT): circlefit/circle_fit.c circlefit/circle_fit_lua.c
+	$(CC) $(CFLAGS) $(LUA_INCLUDE) -O3 $(SHLIB_FLAGS) $< circlefit/circle_fit_lua.c -o $@ $(LUA_MODULE_LIB)
+
 clean:
 	rm -f bits/bits.$(SHLIB_EXT)
 	rm -f dxf/DXF.$(SHLIB_EXT)
 	rm -f gpc/GPC.$(SHLIB_EXT)
 	rm -f nlopt/nlopt.$(SHLIB_EXT)
+	rm -f circlefit/circlefit.$(SHLIB_EXT)
 
 install:
-	install bits/bits.$(SHLIB_EXT)         $(MODULE_ROOT)/lib/lua/$(LUA_VERSION)/
-	install dxf/DXF.$(SHLIB_EXT)           $(MODULE_ROOT)/lib/lua/$(LUA_VERSION)/
-	install gpc/GPC.$(SHLIB_EXT)           $(MODULE_ROOT)/lib/lua/$(LUA_VERSION)/
-	install nlopt/nlopt.$(SHLIB_EXT)       $(MODULE_ROOT)/lib/lua/$(LUA_VERSION)/
-	install random/random.$(SHLIB_EXT)     $(MODULE_ROOT)/lib/lua/$(LUA_VERSION)/
-	install polygonutils/polygonutils.lua  $(MODULE_ROOT)/share/lua/$(LUA_VERSION)/
-	install table_stats/table_stats.lua    $(MODULE_ROOT)/share/lua/$(LUA_VERSION)/
+	install bits/bits.$(SHLIB_EXT)           $(MODULE_ROOT)/lib/lua/$(LUA_VERSION)/
+	install dxf/DXF.$(SHLIB_EXT)             $(MODULE_ROOT)/lib/lua/$(LUA_VERSION)/
+	install gpc/GPC.$(SHLIB_EXT)             $(MODULE_ROOT)/lib/lua/$(LUA_VERSION)/
+	install nlopt/nlopt.$(SHLIB_EXT)         $(MODULE_ROOT)/lib/lua/$(LUA_VERSION)/
+	install random/random.$(SHLIB_EXT)       $(MODULE_ROOT)/lib/lua/$(LUA_VERSION)/
+	install circlefit/circlefit.$(SHLIB_EXT) $(MODULE_ROOT)/lib/lua/$(LUA_VERSION)/
+	install polygonutils/polygonutils.lua    $(MODULE_ROOT)/share/lua/$(LUA_VERSION)/
+	install table_stats/table_stats.lua      $(MODULE_ROOT)/share/lua/$(LUA_VERSION)/
 install2:
-	install bits/bits.$(SHLIB_EXT)         $(MODULE_ROOT2)/lib/lua/$(LUA_VERSION)/
-	install dxf/DXF.$(SHLIB_EXT)           $(MODULE_ROOT2)/lib/lua/$(LUA_VERSION)/
-	install gpc/GPC.$(SHLIB_EXT)           $(MODULE_ROOT2)/lib/lua/$(LUA_VERSION)/
-	install nlopt/nlopt.$(SHLIB_EXT)       $(MODULE_ROOT2)/lib/lua/$(LUA_VERSION)/
-	install random/random.$(SHLIB_EXT)     $(MODULE_ROOT2)/lib/lua/$(LUA_VERSION)/
-	install polygonutils/polygonutils.lua  $(MODULE_ROOT2)/share/lua/$(LUA_VERSION)/
-	install table_stats/table_stats.lua    $(MODULE_ROOT2)/share/lua/$(LUA_VERSION)/
+	install bits/bits.$(SHLIB_EXT)           $(MODULE_ROOT2)/lib/lua/$(LUA_VERSION)/
+	install dxf/DXF.$(SHLIB_EXT)             $(MODULE_ROOT2)/lib/lua/$(LUA_VERSION)/
+	install gpc/GPC.$(SHLIB_EXT)             $(MODULE_ROOT2)/lib/lua/$(LUA_VERSION)/
+	install nlopt/nlopt.$(SHLIB_EXT)         $(MODULE_ROOT2)/lib/lua/$(LUA_VERSION)/
+	install random/random.$(SHLIB_EXT)       $(MODULE_ROOT2)/lib/lua/$(LUA_VERSION)/
+	install circlefit/circlefit.$(SHLIB_EXT) $(MODULE_ROOT2)/lib/lua/$(LUA_VERSION)/
+	install polygonutils/polygonutils.lua    $(MODULE_ROOT2)/share/lua/$(LUA_VERSION)/
+	install table_stats/table_stats.lua      $(MODULE_ROOT2)/share/lua/$(LUA_VERSION)/
 	
