@@ -4,6 +4,7 @@
 #include <lua.h>
 #include <lualib.h>
 #include <lauxlib.h>
+#include "../lua_compat.h"
 #include "gpc.h"
 
 #define LIBNAME		"GPC"

@@ -11,7 +11,10 @@ ALL_BINARY_MODULES = \
 	circlefit/circlefit.$(SHLIB_EXT) \
 	random/random.$(SHLIB_EXT)
 
-all: $(ALL_BINARY_MODULES)
+all: lua_compat.o $(ALL_BINARY_MODULES)
+
+lua_compat.o: lua_compat.c
+	$(CC) -c $(CFLAGS) $(LUA_INCLUDE) -O3 $< -o $@
 
 bits/bits.$(SHLIB_EXT): bits/bits.c
 	$(CC) $(CFLAGS) $(LUA_INCLUDE) -O3 $(SHLIB_FLAGS) $< -o $@ $(LUA_MODULE_LIB)

@@ -3,6 +3,7 @@
 #include <lua.h>
 #include <lualib.h>
 #include <lauxlib.h>
+#include "../lua_compat.h"
 
 #define LIBNAME		"bits"
 #define LIBVERSION	LIBNAME " library for " LUA_VERSION
