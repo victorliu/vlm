@@ -17,22 +17,19 @@ static int lua_circlefit_fit(lua_State *L){
 	niters = luaL_optinteger(L, 2, 100);
 	tol = luaL_optnumber(L, 3, 1e-10);
 	
-	lua_len(L, 1);
-	n = lua_tointeger(L, -1);
-	lua_pop(L, 1);
+	n = lcl_len(L, 1);
 	
 	luaL_argcheck(L, n >= 3, 1, "Must specify at least 3 points");
 	
 	pt = (double*)malloc(sizeof(double) * 2 * n);
 	for(i = 0; i < n; ++i){
-		int ncoord, j;
+		int ncoord, j, ptlen;
 		lua_pushinteger(L, i+1);
 		lua_gettable(L, 1);
 		luaL_argcheck(L, lua_istable(L, -1), 1, "Invalid format for points");
 		
-		lua_len(L, -1);
-		luaL_argcheck(L, 2 == lua_tointeger(L, -1), 1, "Invalid format for points");
-		lua_pop(L, 1);
+		ptlen = lcl_len(L, -1);
+		luaL_argcheck(L, 2 == ptlen, 1, "Invalid format for points");
 		
 		for(j = 0; j < 2; ++j){
 			lua_pushinteger(L, j+1);
