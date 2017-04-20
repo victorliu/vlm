@@ -40,7 +40,7 @@ static int new_writer(lua_State *L){
 		luaL_Stream *s = luaL_checkudata(L, -1, LUA_FILEHANDLE);
 		fp = s->f;
 #else
-		fp = (FILE**)luaL_checkudata(L, -1, LUA_FILEHANDLE);
+		fp = *(FILE**)luaL_checkudata(L, -1, LUA_FILEHANDLE);
 #endif
 		ref = luaL_ref(L, LUA_REGISTRYINDEX);
 	}else{
@@ -84,9 +84,7 @@ static int new_writer(lua_State *L){
 	lua_getfield(L, 1, "layers");
 	if(!lua_isnoneornil(L, -1)){
 		int i, n;
-		lua_len(L, -1);
-		n = lua_tointeger(L, -1);
-		lua_pop(L, 1);
+		n = lcl_len(L, -1);
 		
 		fprintf(fp,
 			"0\n"
@@ -219,9 +217,7 @@ static int writer_polyline(lua_State *L){
 	struct lua_dxf_writer *writer = writer_check(L, 1);
 	luaL_argcheck(L, lua_istable(L, 2), 2, "Must provide a table of vertices");
 	
-	lua_len(L, 2);
-	n = lua_tointeger(L, -1);
-	lua_pop(L, 1);
+	n = lcl_len(L, 2);
 	
 	fprintf(writer->f,
 		"0\n"
