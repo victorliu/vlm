@@ -20,7 +20,7 @@ static int lua_checkvlist(lua_State *L, int ivlist, gpc_vertex_list *vlist){
 	size_t j;
 	if(ivlist < 0){ ivlist += 1 + lua_gettop(L); }
 	
-	size_t n = lua_rawlen(L, ivlist);
+	size_t n = lcl_len(L, ivlist);
 	
 	vlist->num_vertices = (int)n;
 	vlist->vertex = (gpc_vertex*)realloc(vlist->vertex, n*sizeof(gpc_vertex));
@@ -28,7 +28,7 @@ static int lua_checkvlist(lua_State *L, int ivlist, gpc_vertex_list *vlist){
 		lua_pushinteger(L, j+1);
 		lua_gettable(L, ivlist);
 		
-		if(!lua_istable(L, -1) || 2 != lua_rawlen(L, -1)){
+		if(!lua_istable(L, -1) || 2 != lcl_len(L, -1)){
 			lua_pop(L, 1);
 			return 0;
 		};
@@ -62,7 +62,7 @@ static int lua_checkpoly(lua_State *L, int ipoly, gpc_polygon *p){
 	gpc_vertex_list vlist;
 	int *hole;
 	if(!lua_istable(L, ipoly)){ return 0; }
-	size_t n = lua_rawlen(L, ipoly);
+	size_t n = lcl_len(L, ipoly);
 	
 	// Initialize vertex and hole lists
 	vlist.num_vertices = 0;
@@ -75,7 +75,7 @@ static int lua_checkpoly(lua_State *L, int ipoly, gpc_polygon *p){
 	// check if there is a hole record
 	lua_getfield(L, ipoly, "hole");
 	if(!lua_isnil(L, -1)){
-		size_t nh = lua_rawlen(L, -1);
+		size_t nh = lcl_len(L, -1);
 		for(i = 0; i < nh; ++i){
 			lua_pushinteger(L, i+1);
 			lua_gettable(L, -2);
@@ -97,7 +97,7 @@ static int lua_checkpoly(lua_State *L, int ipoly, gpc_polygon *p){
 			return 0;
 		};
 		
-		unsigned nh = lua_rawlen(L, -1);
+		unsigned nh = lcl_len(L, -1);
 		
 		if(2 == nh && 0 == i){
 			lua_pushinteger(L, 1);
