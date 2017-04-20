@@ -3,6 +3,7 @@
 #include <lua.h>
 #include <lualib.h>
 #include <lauxlib.h>
+#include "../lua_compat.h"
 
 #define LIBNAME		"DXF"
 #define LIBVERSION	LIBNAME " library for " LUA_VERSION
@@ -35,9 +36,13 @@ static int new_writer(lua_State *L){
 	
 	lua_getfield(L, 1, "stream");
 	if(!lua_isnil(L, -1)){
+#if LUA_VERSION_NUM > 501
 		luaL_Stream *s = luaL_checkudata(L, -1, LUA_FILEHANDLE);
-		ref = luaL_ref(L, LUA_REGISTRYINDEX);
 		fp = s->f;
+#else
+		fp = (FILE**)luaL_checkudata(L, -1, LUA_FILEHANDLE);
+#endif
+		ref = luaL_ref(L, LUA_REGISTRYINDEX);
 	}else{
 		lua_pop(L, 1);
 	}
