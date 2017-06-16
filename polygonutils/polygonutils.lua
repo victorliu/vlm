@@ -1,5 +1,9 @@
 local polygonutils = {}
 
+local orient2d = function(a, b, c)
+	return ((b[1]-a[1])*(c[2]-a[2]) - (b[2]-a[2])*(c[1]-a[1]))
+end
+
 function polygonutils.transform(p, t)
 	local q = {}
 	for i,v in ipairs(p) do
@@ -174,6 +178,59 @@ function polygonutils.bound(p)
 		{ mx[1], mx[2] },
 		{ mn[1], mx[2] }
 	}
+end
+
+-- Given a set of points, compute the convex hull of the set
+-- The input point set may be re-arranged.
+function polygonutils.convexhull(plist)
+	local n = #plist
+	if n <= 3 then
+		return plist
+	end
+	
+	-- Sort and remove duplicates
+	table.sort(plist, function(a,b)
+		if a[1] < b[1] then return true end
+		if a[1] > b[1] then return false end
+		return a[2] < b[2]
+	end)
+	local inp = { { plist[1][1], plist[1][2] } }
+	for i = 2,n do
+		if plist[i][1] ~= inp[#inp][1] or plist[i][2] ~= inp[#inp][2] then
+			table.insert(inp, { plist[i][1], plist[i][2] })
+		end
+	end
+	
+	local first_point = table.remove(inp, 1)
+	-- Sort remaining points into CCW order around relative to first point
+	table.sort(inp, function(a,b)
+		local orien = orient2d(first_point, a, b)
+		if 0 == orien then
+			return (
+				(a[1]-first_point[1])*(a[1]-first_point[1]) + (a[2]-first_point[2])*(a[2]-first_point[2]) <
+				(b[1]-first_point[1])*(b[1]-first_point[1]) + (b[2]-first_point[2])*(b[2]-first_point[2])
+			)
+		else
+			return orien > 0
+		end
+	end)
+
+	local hull = { first_point, inp[1] }
+	table.insert(inp, first_point) -- sentinel to avoid special case
+	
+	local top = 2;
+	local i = 2;
+
+	while (i <= n) do
+		if orient2d(hull[top-1], hull[top], inp[i]) < 0 then
+			top = top-1 -- top not on hull
+		else
+			top = top+1
+			hull[top] = inp[i]
+			i = i+1
+		end
+	end
+	return hull
 end
 
 return polygonutils
