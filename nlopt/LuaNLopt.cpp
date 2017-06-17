@@ -812,7 +812,7 @@ extern "C" __declspec(dllexport)
 #else
 LUALIB_API 
 #endif
-int luaopen_LuaNLopt(lua_State *L){
+int luaopen_NLopt(lua_State *L){
 	luaL_newlib(L, Reg);
 	
     lua_pushliteral( L, "libversion" );			
