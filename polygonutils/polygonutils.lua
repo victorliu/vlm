@@ -180,6 +180,19 @@ function polygonutils.bound(p)
 	}
 end
 
+function polygonutils.sanitize(p)
+	local n = #p
+	local q = {}
+	for i = 1, n do
+		local j = i+1
+		if j > n then j = 1 end
+		if p[i][1] ~= p[j][1] or p[i][2] ~= p[j][2] then
+			table.insert(q, {p[i][1], p[i][2]})
+		end
+	end
+	return q
+end
+
 -- Given a set of points, compute the convex hull of the set
 -- The input point set may be re-arranged.
 function polygonutils.convexhull(plist)
@@ -230,7 +243,46 @@ function polygonutils.convexhull(plist)
 			i = i+1
 		end
 	end
-	return hull
+	return polygonutils.sanitize(hull)
+end
+
+function polygonutils.offset(u, dist)
+	local n = #u
+	local v = {}
+	for i = 1,n do
+		j = i+1
+		if j > n then j = 1 end
+		k = j+1
+		if k > n then k = 1 end
+		v[j] = {}
+		-- Solve the vector equation
+		--   j + d(j-i)^-perp + s(j-i) == j + d(k-j)^-perp - t(k-j)
+		--   a + s x == b - t y
+		--   s x + t y == b-a
+		--   [ x y ] [ s ] == b-a
+		--           [ t ]
+		--   [ j-i k-j ] [ s ] == d [ (k-j)^-perp - (j-i)^-perp ]
+		--               [ t ]
+		local x = { u[j][1] - u[i][1], u[j][2] - u[i][2] }
+		local nrm = 1 / math.sqrt(x[1]*x[1] + x[2]*x[2])
+		x[1] = x[1] * nrm
+		x[2] = x[2] * nrm
+		local y = { u[k][1] - u[j][1], u[k][2] - u[j][2] }
+		nrm = 1 / math.sqrt(y[1]*y[1] + y[2]*y[2])
+		y[1] = y[1] * nrm
+		y[2] = y[2] * nrm
+		local ba = { dist*(y[2]-x[2]), dist*(x[1]-y[1]) }
+		local xy = (x[1]*y[2] - x[2]*y[1])
+		--local st = { (y[2]*ba[1] - y[1]*ba[2])/xy, (x[1]*ba[2]-x[2]*ba[1])/xy }
+		local s = 0
+		if 0 ~= xy then
+			s = (y[2]*ba[1] - y[1]*ba[2]) / xy
+		end
+		print(x[1], x[2], y[1], y[2], s)
+		v[j][1] = u[j][1] + dist*x[2] + s * x[1]
+		v[j][2] = u[j][2] - dist*x[1] + s * x[2]
+	end
+	return v
 end
 
 return polygonutils
