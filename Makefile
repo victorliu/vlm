@@ -7,7 +7,7 @@ ALL_BINARY_MODULES = \
 	bits/bits.$(SHLIB_EXT) \
 	dxf/DXF.$(SHLIB_EXT) \
 	gpc/GPC.$(SHLIB_EXT) \
-	nlopt/nlopt.$(SHLIB_EXT) \
+	nlopt/NLopt.$(SHLIB_EXT) \
 	circlefit/circlefit.$(SHLIB_EXT) \
 	random/random.$(SHLIB_EXT)
 
@@ -25,7 +25,7 @@ dxf/DXF.$(SHLIB_EXT): dxf/DXF.c lua_compat.o
 gpc/GPC.$(SHLIB_EXT): gpc/gpc.c gpc/luagpc.c lua_compat.o
 	$(CC) $(CFLAGS) -Igpc $(LUA_INCLUDE) -O3 $(SHLIB_FLAGS) $< lua_compat.o gpc/luagpc.c -o $@ $(LUA_MODULE_LIB)
 	
-nlopt/nlopt.$(SHLIB_EXT): nlopt/LuaNLopt.cpp
+nlopt/NLopt.$(SHLIB_EXT): nlopt/LuaNLopt.cpp
 	$(CXX) $(CXXFLAGS) $(LUA_INCLUDE) -O3 $(SHLIB_FLAGS) $< lua_compat.o -o $@ $(LUA_MODULE_LIB) -lnlopt
 
 random/random.$(SHLIB_EXT): random/random.cpp
