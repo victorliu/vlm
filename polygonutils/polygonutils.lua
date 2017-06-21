@@ -129,6 +129,20 @@ function polygonutils.area(p)
 	return 0.5*area
 end
 
+function polygonutils.orient(p, neg)
+	local a = polygonutils.area(p)
+	local ng = neg or false
+	if ((ng and a > 0) or ((not ng) and a < 0)) then
+		local n = #p
+		local r = {}
+		for i = 1,n do
+			r[i] = { p[n-i+1][1], p[n-i+1][2] }
+		end
+		return r
+	end
+	return p
+end
+
 function polygonutils.perimeter(p)
 	local n = #p
 	local perim = 0
@@ -180,8 +194,10 @@ function polygonutils.bound(p)
 	}
 end
 
-function polygonutils.sanitize(p)
+function polygonutils.sanitize(p, tol)
+	local droptol = tol or 0
 	local n = #p
+	-- remove duplicates
 	local q = {}
 	for i = 1, n do
 		local j = i+1
@@ -190,7 +206,30 @@ function polygonutils.sanitize(p)
 			table.insert(q, {p[i][1], p[i][2]})
 		end
 	end
-	return q
+	-- check for collinear segments
+	local coll = {}
+	n = #q
+	local any_collinear = false
+	for j = 1,n do
+		local i = j-1
+		if i < 1 then i = n end
+		local k = j+1
+		if k > n then k = 1 end
+		if math.abs(orient2d(q[i], q[j], q[k])) < droptol then
+			coll[j] = true
+			any_collinear = true
+		else
+			coll[j] = false
+		end
+	end
+	if not any_collinear then return q end
+	local r = {}
+	for j = 1,n do
+		if not coll[j] then
+			table.insert(r, q[j])
+		end
+	end
+	return polygonutils.orient(r)
 end
 
 -- Given a set of points, compute the convex hull of the set
@@ -250,9 +289,9 @@ function polygonutils.offset(u, dist)
 	local n = #u
 	local v = {}
 	for i = 1,n do
-		j = i+1
+		local j = i+1
 		if j > n then j = 1 end
-		k = j+1
+		local k = j+1
 		if k > n then k = 1 end
 		v[j] = {}
 		-- Solve the vector equation
@@ -278,11 +317,67 @@ function polygonutils.offset(u, dist)
 		if 0 ~= xy then
 			s = (y[2]*ba[1] - y[1]*ba[2]) / xy
 		end
-		print(x[1], x[2], y[1], y[2], s)
+		--print(x[1], x[2], y[1], y[2], s)
 		v[j][1] = u[j][1] + dist*x[2] + s * x[1]
 		v[j][2] = u[j][2] - dist*x[1] + s * x[2]
 	end
 	return v
+end
+
+function polygonutils.extremepoint(p, dir)
+	local n = #p
+	if n < 1 then return end
+	local ibest = 1
+	local dbest = p[1][1]*dir[1] + p[1][2]*dir[2]
+	for i = 2,n do
+		local d = p[i][1]*dir[1] + p[i][2]*dir[2]
+		if d > dbest then
+			dbest = d
+			ibest = i
+		end
+	end
+	return ibest, p[ibest]
+end
+
+-- n = number of vertices
+-- r = radius
+-- offset: 0 means first vertex is (r, 0)
+--         1 means first vertex is (r*cos(2pi/n), r*sin(2pi/n))
+--         else first vertex is (r*cos(2pi/n * offset), r*sin(2pi/n * offset))
+function polygonutils.regular(n, r, offset)
+	local off = offset or 0
+	local q = 2*math.pi/n
+	local c = math.cos(q)
+	local s = math.sin(q)
+	local p = {
+		{ r*math.cos(off*q), r*math.sin(off*q) }
+	}
+	for i = 2,n do
+		p[i] = {
+			c * p[i-1][1] - s * p[i-1][2],
+			c * p[i-1][2] + s * p[i-1][1],
+		}
+	end
+	return p
+end
+
+function polygonutils.normal(p, j)
+	local n = #p
+	local i = j-1
+	if i < 1 then i = n end
+	local k = j+1
+	if k > n then k = 1 end
+	local a = { p[j][1] - p[i][1], p[j][2] - p[i][2] }
+	local n = 1 / math.sqrt(a[1]*a[1] + a[2]*a[2])
+	a[1] = n*a[1]
+	a[2] = n*a[2]
+	local b = { p[k][1] - p[j][1], p[k][2] - p[j][2] }
+	local n = 1 / math.sqrt(b[1]*b[1] + b[2]*b[2])
+	b[1] = n*b[1]
+	b[2] = n*b[2]
+	local c = { a[1]+b[1], a[2]+b[2] }
+	local n = 1 / math.sqrt(c[1]*c[1] + c[2]*c[2])
+	return { c[2]*n, -c[1]*n }
 end
 
 return polygonutils
