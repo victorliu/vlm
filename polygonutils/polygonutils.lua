@@ -1,8 +1,10 @@
 local polygonutils = {}
+--local predicates = require('geompredicates')
 
 local orient2d = function(a, b, c)
 	return ((b[1]-a[1])*(c[2]-a[2]) - (b[2]-a[2])*(c[1]-a[1]))
 end
+--local orient2d = predicates.orient
 
 function polygonutils.transform(p, t)
 	local q = {}
@@ -234,55 +236,65 @@ end
 
 -- Given a set of points, compute the convex hull of the set
 -- The input point set may be re-arranged.
-function polygonutils.convexhull(plist)
-	local n = #plist
+function polygonutils.convexhull(pt)
+	local n = #pt
 	if n <= 3 then
-		return plist
+		return pt
 	end
 	
-	-- Sort and remove duplicates
-	table.sort(plist, function(a,b)
-		if a[1] < b[1] then return true end
-		if a[1] > b[1] then return false end
-		return a[2] < b[2]
-	end)
-	local inp = { { plist[1][1], plist[1][2] } }
-	for i = 2,n do
-		if plist[i][1] ~= inp[#inp][1] or plist[i][2] ~= inp[#inp][2] then
-			table.insert(inp, { plist[i][1], plist[i][2] })
+	-- Find lowest and remove it
+	local first
+	local p = {}
+	do
+		local m = 1
+		for i = 2,n do
+			if (pt[i][2] < pt[m][2]) or ((pt[i][2] == pt[m][2]) and (pt[i][1] > pt[m][1])) then
+				m = i
+			end
+		end
+		first = { pt[m][1], pt[m][2] }
+		for i = 1,n do
+			if i ~= m then
+				table.insert(p, {pt[i][1], pt[i][2]})
+			end
 		end
 	end
 	
-	local first_point = table.remove(inp, 1)
-	-- Sort remaining points into CCW order around relative to first point
-	table.sort(inp, function(a,b)
-		local orien = orient2d(first_point, a, b)
-		if 0 == orien then
-			return (
-				(a[1]-first_point[1])*(a[1]-first_point[1]) + (a[2]-first_point[2])*(a[2]-first_point[2]) <
-				(b[1]-first_point[1])*(b[1]-first_point[1]) + (b[2]-first_point[2])*(b[2]-first_point[2])
-			)
+	-- Sort by angle
+	table.sort(p, function(a,b)
+		local area = orient2d(first, a, b)
+		if area > 0 then
+			return true
+		elseif area < 0 then
+			return false
 		else
-			return orien > 0
+			local ax = a[1]-first[1]
+			local ay = a[2]-first[2]
+			local bx = b[1]-first[1]
+			local by = b[2]-first[2]
+			return ax*ax+ay*ay < bx*bx+by*by
 		end
 	end)
-
-	local hull = { first_point, inp[1] }
-	table.insert(inp, first_point) -- sentinel to avoid special case
+	p[0] = first
 	
-	local top = 2;
-	local i = 2;
-
-	while (i <= n) do
-		if orient2d(hull[top-1], hull[top], inp[i]) < 0 then
-			top = top-1 -- top not on hull
-		else
-			top = top+1
-			hull[top] = inp[i]
+	-- Graham scan
+	local S = { n-1, 0 }
+	local i = 1
+	while i < n do
+		local area = orient2d(p[S[#S-1]], p[S[#S]], p[i])
+		if area > 0 then
+			table.insert(S, i)
 			i = i+1
+		else
+			table.remove(S)
 		end
 	end
-	return polygonutils.sanitize(hull)
+	table.remove(S)
+	local ret = {}
+	for i,ind in ipairs(S) do
+		ret[i] = p[ind]
+	end
+	return ret
 end
 
 function polygonutils.offset(u, dist)
