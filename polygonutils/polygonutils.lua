@@ -392,4 +392,40 @@ function polygonutils.normal(p, j)
 	return { c[2]*n, -c[1]*n }
 end
 
+function polygonutils.segment_grid(p, nrows, ncols, rowbreaks, colbreaks)
+	local GPC = require('GPC')
+	local bnd = polygonutils.bound(p)
+	local ret = {}
+	local y0 = bnd[1][2]
+	for i = 1,nrows do
+		local y1 = 0
+		if rowbreaks[i] then
+			y1 = (1-rowbreaks[i])*bnd[1][2] + rowbreaks[i]*bnd[3][2]
+		else
+			y1 = i/nrows*bnd[3][2]
+		end
+		local x0 = bnd[1][1]
+		for j = 1,ncols do
+			if colbreaks[j] then
+				x1 = (1-colbreaks[j])*bnd[1][1] + colbreaks[j]*bnd[3][1]
+			else
+				x1 = j/ncols*bnd[3][1]
+			end
+			local q = {
+				{ x0, y0 },
+				{ x1, y0 },
+				{ x1, y1 },
+				{ x0, y1 },
+			}
+			local result = GPC.intersection(p, q)
+			if result and result[1] then
+				table.insert(ret, result[1])
+			end
+			x0 = x1
+		end
+		y0 = y1
+	end
+	return ret
+end
+
 return polygonutils
