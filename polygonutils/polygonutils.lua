@@ -49,7 +49,7 @@ function polygonutils.convex_offset(u, d)
     --Rm = [ 0 1; -1 0 ]; % 90 deg CW rotation
     for i = 1,N do
         local j = (i%N)+1
-        local k = ((j)%N)+1
+        local k = ((j+1)%N)+1
         -- Solve the vector equation
         --   j + d(j-i)^-perp + s(j-i) == j + d(k-j)^-perp - t(k-j)
         --   a + s x == b - t y
@@ -78,14 +78,20 @@ function polygonutils.convex_offset(u, d)
 			d * (y[2]-x[2]),
 			d * (x[1]-y[1])
 		}
-		local idet = 1 / (x[1]*y[2] - x[2]*y[1])
-		local st = { -- st = [ x y ]\ba;
-			idet*(y[2]*ba[1]-y[1]*ba[2]),
-			idet*(x[1]*ba[2]-x[2]*ba[1])
-		}
-        --v(:,j) = u(:,j) + d*Rm*x + st(1)*x;
-        v[j][1] = u[j][1] + d*x[2] * st[1]*x[1]
-        v[j][2] = u[j][2] - d*x[1] * st[1]*x[2]
+		local det = (x[1]*y[2] - x[2]*y[1])
+		if math.abs(det) == 0 then
+			v[j][1] = u[j][1] + d*x[2]
+			v[j][2] = u[j][2] - d*x[1]
+		else
+			local idet = 1 / det
+			local st = { -- st = [ x y ]\ba;
+				idet*(y[2]*ba[1]-y[1]*ba[2]),
+				idet*(x[1]*ba[2]-x[2]*ba[1])
+			}
+			--v(:,j) = u(:,j) + d*Rm*x + st(1)*x;
+			v[j][1] = u[j][1] + d*x[2] + st[1]*x[1]
+			v[j][2] = u[j][2] - d*x[1] + st[1]*x[2]
+		end
     end
 	return v
 end
@@ -426,6 +432,30 @@ function polygonutils.segment_grid(p, nrows, ncols, rowbreaks, colbreaks)
 		y0 = y1
 	end
 	return ret
+end
+
+-- Given a set of polygons {p_i} in p, compute the partion of the union of p
+-- That is, suppose D is the union of all p_i. Then, we compute a set of polygons
+-- {q_i} such that the union of q_i is D, and all q_i are disjoint, and each p_i
+-- is a union of a set of q_{j_i}. We return the set q, and the mapping of each p_i
+-- to the q_j that compose it.
+function polygonutils.union_partition(p)
+	if not p or #p < 1 then
+		return {}, {}
+	end
+	local GPC = require('GPC')
+	local q = { p[1] }
+	local np = #p
+	for i = 2,np do
+		local sa
+		sa = GPC.xor(q, p[i])
+		local sc = GPC.intersection(q, p[i])
+		q = sa
+		for j,v in ipairs(sc) do
+			table.insert(q, sc)
+		end
+	end
+	return q
 end
 
 return polygonutils
