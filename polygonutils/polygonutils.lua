@@ -458,4 +458,35 @@ function polygonutils.union_partition(p)
 	return q
 end
 
+function polygonutils.stabx(p, x)
+	local n = #p
+	local i = n
+	local ret = {}
+	for j = 1,n do
+		if (p[i][1] < x and p[j][1] >= x) or (p[i][1] >= x and p[j][1] < x) then
+			local t = (x-p[i][1]) / (p[j][1]-p[i][1])
+			local y = (1-t)*p[i][2] + t*p[j][2]
+			table.insert(ret, y)
+		end
+		i = j
+	end
+	table.sort(ret)
+	return ret
+end
+function polygonutils.staby(p, y)
+	local n = #p
+	local i = n
+	local ret = {}
+	for j = 1,n do
+		if (p[i][2] < y and p[j][2] >= y) or (p[i][2] >= y and p[j][2] < y) then
+			local t = (y-p[i][2]) / (p[j][2]-p[i][2])
+			local x = (1-t)*p[i][1] + t*p[j][1]
+			table.insert(ret, x)
+		end
+		i = j
+	end
+	table.sort(ret)
+	return ret
+end
+
 return polygonutils
